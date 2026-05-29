@@ -1,0 +1,356 @@
+@import "98.css";
+
+:root {
+  color-scheme: light;
+  --desktop-teal: #008080;
+  --window-surface: #ece9d8;
+  --window-border: rgba(0, 0, 0, 0.24);
+  --text: #1f1f1f;
+  --muted: #4f4f4f;
+  --line: rgba(0, 0, 0, 0.14);
+  --card: rgba(255, 255, 255, 0.56);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  min-height: 100vh;
+  background: var(--desktop-teal);
+  color: var(--text);
+  font-family: Tahoma, "Segoe UI", Verdana, sans-serif;
+}
+
+body,
+button,
+input,
+textarea,
+a {
+  font-family: inherit;
+}
+
+a {
+  color: inherit;
+}
+
+button {
+  font: inherit;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.desktop-shell {
+  min-height: 100vh;
+  padding: clamp(12px, 2.2vw, 28px);
+  display: grid;
+  place-items: center;
+  background: var(--desktop-teal);
+}
+
+.showroom-window {
+  width: min(1180px, calc(100vw - 24px));
+  height: min(840px, calc(100vh - 24px));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--window-border);
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.34);
+}
+
+.showroom-title-bar {
+  flex: 0 0 auto;
+}
+
+.showroom-window-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  overflow: auto;
+  padding: 22px;
+  background: var(--window-surface);
+  color: var(--text);
+}
+
+.showroom-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+  flex-wrap: wrap;
+}
+
+.showroom-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.showroom-brand h1,
+.showroom-brand p,
+.page-hero h2,
+.page-kicker,
+.info-card h3,
+.timeline-head h3,
+.timeline-company,
+.timeline-period,
+.page-lede,
+.page p {
+  margin: 0;
+}
+
+.showroom-brand h1 {
+  font-size: clamp(1.8rem, 3.1vw, 3rem);
+  line-height: 0.95;
+  letter-spacing: -0.05em;
+}
+
+.showroom-brand p {
+  color: var(--muted);
+  font-size: 1rem;
+}
+
+.showroom-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+}
+
+.showroom-link {
+  padding-bottom: 3px;
+  border-bottom: 1px solid transparent;
+  color: #222;
+  text-decoration: none;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.showroom-link:hover,
+.showroom-link.is-active {
+  border-bottom-color: currentColor;
+}
+
+.showroom-route {
+  animation: page-enter 0.22s ease-out;
+  display: flex;
+  flex: 1;
+}
+
+.page {
+  display: grid;
+  gap: 20px;
+  width: 100%;
+}
+
+.page-hero {
+  display: grid;
+  gap: 10px;
+  max-width: 72ch;
+}
+
+.page-hero-inline h2 {
+  font-size: clamp(1.55rem, 2.6vw, 2.35rem);
+  line-height: 1.05;
+  letter-spacing: -0.05em;
+}
+
+.page-kicker {
+  color: var(--muted);
+  font-size: 0.82rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.page-lede {
+  color: #313131;
+  line-height: 1.65;
+  max-width: 62ch;
+}
+
+.page-grid,
+.page-stack,
+.timeline,
+.contact-grid {
+  display: grid;
+  gap: 14px;
+}
+
+.page-grid-2,
+.contact-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.info-card {
+  background: var(--card);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  padding: 16px 18px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.info-card h3 {
+  font-size: 1rem;
+  line-height: 1.15;
+}
+
+.info-card p {
+  margin-top: 8px;
+  color: #333;
+  line-height: 1.65;
+}
+
+.info-card-wide {
+  max-width: 100%;
+}
+
+.timeline-item {
+  display: grid;
+  gap: 10px;
+}
+
+.timeline-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.timeline-company,
+.timeline-period {
+  color: var(--muted);
+  font-size: 0.93rem;
+}
+
+.project-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.project-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.project-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.project-note {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.project-tab {
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  background: transparent;
+  color: #4a4a4a;
+  cursor: pointer;
+}
+
+.project-tab.is-active {
+  color: #111;
+  border-bottom-color: currentColor;
+}
+
+.project-card {
+  display: grid;
+  gap: 8px;
+}
+
+.project-card a {
+  width: fit-content;
+  color: #111;
+  text-decoration: none;
+  border-bottom: 1px solid currentColor;
+  padding-bottom: 1px;
+}
+
+.contact-card {
+  display: grid;
+  gap: 12px;
+}
+
+.contact-card a {
+  width: fit-content;
+  color: #111;
+  text-decoration: none;
+  border-bottom: 1px solid currentColor;
+  padding-bottom: 1px;
+}
+
+.contact-form {
+  display: grid;
+  gap: 12px;
+}
+
+.contact-form label {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.contact-form input,
+.contact-form textarea {
+  width: 100%;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--text);
+  padding: 8px 10px;
+}
+
+.contact-form input:focus,
+.contact-form textarea:focus {
+  outline: none;
+  border-color: rgba(0, 0, 0, 0.42);
+}
+
+.contact-form button {
+  width: fit-content;
+  justify-self: start;
+}
+
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 860px) {
+  .showroom-window {
+    width: min(100%, calc(100vw - 16px));
+    height: min(calc(100vh - 16px), 920px);
+  }
+
+  .showroom-window-body {
+    padding: 16px;
+  }
+
+  .page-grid-2,
+  .contact-grid {
+    grid-template-columns: 1fr;
+  }
+}

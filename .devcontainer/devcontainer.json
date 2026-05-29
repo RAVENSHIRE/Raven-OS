@@ -1,0 +1,27 @@
+{
+  "name": "Raven OS",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:20",
+  "postCreateCommand": "bash bootstrap.sh",
+  "postAttachCommand": "bash -lc 'if ! pgrep -f \"vite\" >/dev/null; then npm run dev -- --host 0.0.0.0 --port 5173; fi'",
+
+  "forwardPorts": [5173],
+  "portsAttributes": {
+    "5173": {
+      "label": "Raven OS (Vite)",
+      "onAutoForward": "openBrowser",
+      "requireLocalPort": true,
+      "protocol": "http"
+    }
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "GitHub.copilot",
+        "GitHub.copilot-chat",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode"
+      ]
+    }
+  }
+}
