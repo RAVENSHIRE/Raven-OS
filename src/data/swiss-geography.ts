@@ -38,6 +38,7 @@ const SWISS_DATA: SwissData = {
   mountains: [
     "Albis",
     "Bachtel",
+    "Badus",
     "Breithorn",
     "Dammastock",
     "Dom",

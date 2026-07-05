@@ -91,8 +91,8 @@ export default function Window({
       </div>
 
       <div className="window-body desktop-window-body">{children}</div>
-      <div className="window-status-bar" role="status" aria-label={`${title} status`}>
-        <span>{statusText ?? "Ready"}</span>
+      <div className="status-bar window-status-bar" role="status" aria-label={`${title} status`}>
+        <p className="status-bar-field">{statusText ?? "Ready"}</p>
       </div>
     </section>
   );

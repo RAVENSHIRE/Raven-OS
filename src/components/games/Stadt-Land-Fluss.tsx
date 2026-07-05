@@ -11,7 +11,7 @@ import {
 
 type GameState = "playing" | "won" | "lost";
 
-const ROUND_SECONDS = 90;
+const ROUND_SECONDS = 150;
 
 type ValidationCell = {
   answer: string;
@@ -19,6 +19,16 @@ type ValidationCell = {
 };
 
 type ValidationByCategory = Record<SwissCategory, ValidationCell[]>;
+type HintByCategory = Record<SwissCategory, string | null>;
+
+function normalizeValue(value: string) {
+  return value
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, " ");
+}
 
 function shuffle<T>(items: T[]) {
   const copy = [...items];
@@ -52,6 +62,12 @@ export default function StadtLandFluss() {
     mountains: ["", "", ""],
     lakes: ["", "", ""],
     rivers: ["", "", ""],
+  });
+  const [hints, setHints] = useState<HintByCategory>({
+    cities: null,
+    mountains: null,
+    lakes: null,
+    rivers: null,
   });
   const [validation, setValidation] = useState<ValidationByCategory | null>(null);
   const [secondsLeft, setSecondsLeft] = useState(ROUND_SECONDS);
@@ -88,6 +104,15 @@ export default function StadtLandFluss() {
     state === "playing" &&
     currentCategories.every((category) => answers[category].every((value) => value.trim().length > 0));
 
+  const allValidAnswers = useMemo(() => {
+    return {
+      cities: answersForLetter("cities", round.letter),
+      mountains: answersForLetter("mountains", round.letter),
+      lakes: answersForLetter("lakes", round.letter),
+      rivers: answersForLetter("rivers", round.letter),
+    } satisfies Record<SwissCategory, string[]>;
+  }, [round.letter]);
+
   const statusText = useMemo(() => {
     if (state === "won") {
       return "You won! (1/4 unlocked)";
@@ -108,6 +133,39 @@ export default function StadtLandFluss() {
     setAnswers((current) => {
       const nextCategoryAnswers = [...current[category]];
       nextCategoryAnswers[answerIndex] = value;
+      return {
+        ...current,
+        [category]: nextCategoryAnswers,
+      };
+    });
+  };
+
+  const useHint = (category: SwissCategory) => {
+    if (state !== "playing" || hints[category]) {
+      return;
+    }
+
+    const possibleAnswers = answersForLetter(category, round.letter);
+    const currentNormalizedAnswers = new Set(answers[category].map((value) => normalizeValue(value)));
+    const hintValue = possibleAnswers.find((entry) => !currentNormalizedAnswers.has(normalizeValue(entry))) ?? possibleAnswers[0];
+
+    if (!hintValue) {
+      return;
+    }
+
+    setHints((current) => ({
+      ...current,
+      [category]: hintValue,
+    }));
+
+    setAnswers((current) => {
+      const nextCategoryAnswers = [...current[category]];
+      const firstEmptyIndex = nextCategoryAnswers.findIndex((value) => value.trim().length === 0);
+
+      if (firstEmptyIndex >= 0) {
+        nextCategoryAnswers[firstEmptyIndex] = hintValue;
+      }
+
       return {
         ...current,
         [category]: nextCategoryAnswers,
@@ -144,6 +202,12 @@ export default function StadtLandFluss() {
       lakes: ["", "", ""],
       rivers: ["", "", ""],
     });
+    setHints({
+      cities: null,
+      mountains: null,
+      lakes: null,
+      rivers: null,
+    });
     setValidation(null);
     setSecondsLeft(ROUND_SECONDS);
     setState("playing");
@@ -163,6 +227,18 @@ export default function StadtLandFluss() {
               {CATEGORY_LABELS[category]} ({round.letter}...)
             </legend>
 
+            <div className="slf-hint-row">
+              <button
+                type="button"
+                className="game-reset slf-hint-button"
+                onClick={() => useHint(category)}
+                disabled={state !== "playing" || Boolean(hints[category])}
+              >
+                {hints[category] ? "Hint used" : `Show hint for ${CATEGORY_LABELS[category]}`}
+              </button>
+              {hints[category] && <span className="slf-hint-value">Hint: {hints[category]}</span>}
+            </div>
+
             {answers[category].map((value, answerIndex) => {
               const result = validation?.[category]?.[answerIndex];
 
@@ -177,7 +253,7 @@ export default function StadtLandFluss() {
                   />
                   {validation && (
                     <span className={`slf-result-badge ${result?.valid ? "is-ok" : "is-bad"}`.trim()}>
-                      {result?.valid ? "Correct" : "Wrong"}
+                      {result?.valid ? "Correct ✓" : "Wrong ✗"}
                     </span>
                   )}
                 </label>
@@ -204,6 +280,47 @@ export default function StadtLandFluss() {
           )}
           /{currentCategories.length * 3}
         </p>
+      )}
+
+      {validation && (
+        <section className="slf-results" aria-live="polite">
+          <h3>Round Results</h3>
+
+          {currentCategories.map((category) => {
+            const playerAnswers = validation[category];
+            const alternatives = allValidAnswers[category].filter(
+              (validAnswer) => !playerAnswers.some((item) => normalizeValue(item.answer) === normalizeValue(validAnswer))
+            );
+
+            return (
+              <article key={`results-${category}`} className="slf-results-category">
+                <h4>
+                  {CATEGORY_LABELS[category]} ({round.letter}...)
+                </h4>
+
+                <div className="slf-results-table" role="table" aria-label={`${CATEGORY_LABELS[category]} results`}>
+                  <div className="slf-results-header" role="row">
+                    <strong role="columnheader">Player's answer</strong>
+                    <strong role="columnheader">Result</strong>
+                  </div>
+
+                  {playerAnswers.map((item, index) => (
+                    <div key={`result-${category}-${index}`} className="slf-results-row" role="row">
+                      <span role="cell">{item.answer.trim() || "(empty)"}</span>
+                      <span role="cell" className={item.valid ? "slf-result-ok" : "slf-result-bad"}>
+                        {item.valid ? "Correct ✓" : "Wrong ✗"}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                <p className="slf-alternatives">
+                  Other {CATEGORY_LABELS[category].toLowerCase()}: {alternatives.length > 0 ? alternatives.join(", ") : "No other alternatives"}
+                </p>
+              </article>
+            );
+          })}
+        </section>
       )}
     </div>
   );

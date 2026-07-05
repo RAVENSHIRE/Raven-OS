@@ -40,11 +40,10 @@ export const HOME_LANDING = {
 };
 
 export const ABOUT = {
-  intro: "I'm Jay, a data science student with a practical mindset and a strong focus on clear digital products.",
+  intro: "I'm Jay Krayenbuehl, a data science student building clean fintech tools and practical digital products.",
   aboutMe:
-    "I enjoy bridging technology and business to create software that solves real problems. My interests include product thinking, clean interfaces, and data-driven decisions.",
-  hobbies:
-    "Outside of work and study, I spend time producing music, sketching visual concepts, and experimenting with modern web tools.",
+    "I combine Swiss precision with creative product thinking to turn complex ideas into interfaces that feel simple, clear, and reliable.",
+  hobbies: "Python, TypeScript, SQL, React, data storytelling, and product-focused problem solving.",
   contactCta: "Get in touch ->",
 };
 

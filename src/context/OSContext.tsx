@@ -86,7 +86,7 @@ export function OSProvider({ children }: PropsWithChildren) {
 
       return {
         ...current,
-        [id]: { x: 168, y: 48 },
+        [id]: { x: 128, y: 48 },
       };
     });
 

@@ -4,7 +4,9 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host 0.0.0.0 --port 5173 --strictPort",
+    "dev:stop": "sh -c 'pids=$(lsof -ti:5173 || true); if [ -n \"$pids\" ]; then kill $pids; fi'",
+    "dev:restart": "npm run dev:stop && npm run dev",
     "build": "vite build",
     "preview": "vite preview",
     "vercel:link": "vercel link",

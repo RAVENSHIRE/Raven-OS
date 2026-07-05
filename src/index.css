@@ -2,9 +2,8 @@
 
 :root {
 	color-scheme: light;
-	--desktop-teal: #0a6f6f;
-	--desktop-teal-deep: #055a5a;
-	--desktop-grid: rgba(255, 255, 255, 0.06);
+	--desktop-teal: #008080;
+	--desktop-grid: rgba(255, 255, 255, 0.05);
 	--taskbar-surface: #c0c0c0;
 	--taskbar-border-dark: #808080;
 	--taskbar-border-light: #fff;
@@ -43,13 +42,36 @@ a {
 }
 
 .os-shell {
+	position: relative;
 	min-height: 100vh;
 	padding-bottom: 44px;
 	overflow: hidden;
-	background:
-		radial-gradient(circle at 14% 16%, rgba(255, 255, 255, 0.18), transparent 34%),
-		radial-gradient(circle at 84% 6%, rgba(255, 255, 255, 0.09), transparent 28%),
-		linear-gradient(145deg, var(--desktop-teal), var(--desktop-teal-deep));
+	background-color: #008080;
+	background-image: repeating-linear-gradient(
+		45deg,
+		transparent,
+		transparent 2px,
+		rgba(0, 0, 0, 0.03) 2px,
+		rgba(0, 0, 0, 0.03) 4px
+	);
+}
+
+.os-shell::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(180deg, #008080 0%, #006666 100%);
+	opacity: 0.1;
+	pointer-events: none;
+}
+
+/* Quick fallback to the old plain background. */
+.os-shell.desktop-bg-old {
+	background: var(--desktop-teal);
+}
+
+.os-shell.desktop-bg-old::before {
+	display: none;
 }
 
 .desktop-area {
@@ -69,7 +91,7 @@ a {
 	background-image:
 		linear-gradient(to right, var(--desktop-grid) 1px, transparent 1px),
 		linear-gradient(to bottom, var(--desktop-grid) 1px, transparent 1px);
-	background-size: 22px 22px;
+	background-size: 26px 26px;
 	pointer-events: none;
 }
 
@@ -103,10 +125,7 @@ a {
 
 .desktop-icon-glyph {
 	width: 34px;
-	height: 30px;
-	border: 2px solid #041d4d;
-	background: linear-gradient(180deg, #d2e2ff, #91addb);
-	box-shadow: inset 1px 1px 0 #fff;
+	height: 32px;
 }
 
 .desktop-canvas {
@@ -553,6 +572,9 @@ a {
 	display: inline-flex;
 	align-items: center;
 	gap: 7px;
+	padding: 0 10px;
+	min-width: 86px;
+	font-weight: 700;
 }
 
 .taskbar-start-logo {
@@ -561,24 +583,29 @@ a {
 	width: 13px;
 	height: 13px;
 	font-size: 0.55rem;
-	background: linear-gradient(180deg, #0f4f9f, #072a58);
+	background: #1084d0;
 	color: #fff;
-	border: 1px solid #fff;
+	border: 1px solid #0b5f9a;
 }
 
-.taskbar-start,
+.taskbar-start-button,
 .taskbar-window-button {
 	border-top: 2px solid var(--taskbar-border-light);
 	border-left: 2px solid var(--taskbar-border-light);
 	border-right: 2px solid var(--taskbar-border-dark);
 	border-bottom: 2px solid var(--taskbar-border-dark);
-	background: #c7c7c7;
+	background: #c0c0c0;
 	padding: 0 10px;
 	cursor: pointer;
 }
 
-.taskbar-start {
-	font-weight: 700;
+.taskbar-start-button:active,
+.taskbar-window-button.is-active {
+	border-top: 2px solid var(--taskbar-border-dark);
+	border-left: 2px solid var(--taskbar-border-dark);
+	border-right: 2px solid var(--taskbar-border-light);
+	border-bottom: 2px solid var(--taskbar-border-light);
+	background: #b8b8b8;
 }
 
 .taskbar-windows {
@@ -592,11 +619,6 @@ a {
 	display: grid;
 	place-items: center;
 	padding: 0 10px;
-	border-top: 2px solid var(--taskbar-border-dark);
-	border-left: 2px solid var(--taskbar-border-dark);
-	border-right: 2px solid var(--taskbar-border-light);
-	border-bottom: 2px solid var(--taskbar-border-light);
-	background: #d7d7d7;
 	min-width: 72px;
 	font-size: 0.86rem;
 	min-width: 96px;
@@ -613,15 +635,13 @@ a {
 }
 
 .window-status-bar {
-	height: 18px;
-	display: flex;
-	align-items: center;
-	padding: 0 6px;
-	border-top: 1px solid #808080;
-	box-shadow: inset 1px 1px 0 #fff;
-	background: #d9d9d9;
+	margin-top: 0;
+}
+
+.window-status-bar .status-bar-field {
+	min-width: 0;
+	margin: 0;
 	font-size: 0.74rem;
-	color: #222;
 }
 
 @keyframes page-in {
@@ -711,8 +731,8 @@ a {
 .desktop-icon-glyph {
 	display: grid;
 	place-items: center;
-	width: 40px;
-	height: 34px;
+	width: 34px;
+	height: 32px;
 }
 
 .desktop-icon-image {
@@ -720,6 +740,19 @@ a {
 	image-rendering: crisp-edges;
 	user-select: none;
 	pointer-events: none;
+}
+
+.desktop-icon-fallback {
+	width: 32px;
+	height: 32px;
+	display: grid;
+	place-items: center;
+	font-family: Tahoma, "Segoe UI", sans-serif;
+	font-size: 1rem;
+	font-weight: 700;
+	color: #fff;
+	background: #2464c9;
+	border: 1px solid rgba(0, 0, 0, 0.35);
 }
 
 .desktop-icon-label {
@@ -773,15 +806,73 @@ a {
 	opacity: 1;
 }
 
-.taskbar-window-button.is-active {
-	background: #b1b1b1;
-	box-shadow: inset 1px 1px 0 #7f7f7f;
-}
-
 .game-panel {
 	display: grid;
 	gap: 10px;
 	align-content: start;
+}
+
+.start-menu {
+	position: absolute;
+	left: 0;
+	bottom: 44px;
+	z-index: 1001;
+	display: flex;
+	min-width: 232px;
+	padding: 2px;
+}
+
+.start-menu-brand {
+	width: 28px;
+	background: #808080;
+	position: relative;
+}
+
+.start-menu-brand-text {
+	position: absolute;
+	left: 7px;
+	bottom: 6px;
+	transform: rotate(-90deg);
+	transform-origin: left bottom;
+	white-space: nowrap;
+	font-size: 0.86rem;
+	font-weight: 700;
+	letter-spacing: 0.06em;
+	color: #f5f5f5;
+}
+
+.start-menu-actions {
+	display: grid;
+	gap: 1px;
+	padding: 2px 3px;
+	width: 100%;
+}
+
+.start-menu-item {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	border: 0;
+	background: transparent;
+	padding: 6px 8px;
+	font-size: 0.92rem;
+	text-align: left;
+	color: #111;
+	cursor: pointer;
+}
+
+.start-menu-item:hover,
+.start-menu-item:focus-visible {
+	background: #000080;
+	color: #fff;
+	outline: none;
+}
+
+.start-menu-item-icon {
+	width: 16px;
+	height: 16px;
+	image-rendering: pixelated;
+	image-rendering: crisp-edges;
 }
 
 .game-status {
@@ -960,6 +1051,61 @@ a {
 .floppy-secret p {
 	margin-top: 8px;
 	line-height: 1.55;
+}
+
+.desktop-window-classified .desktop-window-title {
+	background: linear-gradient(90deg, #030918 0%, #0a1d43 48%, #030918 100%);
+}
+
+.desktop-window-classified .desktop-window-body {
+	background:
+		radial-gradient(circle at 18% 22%, rgba(124, 177, 255, 0.16), transparent 45%),
+		radial-gradient(circle at 82% 10%, rgba(255, 255, 255, 0.08), transparent 36%),
+		linear-gradient(180deg, #020712 0%, #08162d 100%);
+	color: #f4f8ff;
+	border: 1px solid #122951;
+	box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+.desktop-window-classified .window-status-bar {
+	background: #061327;
+	color: #c5dcff;
+}
+
+.desktop-window-classified .status-bar-field {
+	border-top-color: #142c53;
+	border-left-color: #142c53;
+	border-right-color: #030a16;
+	border-bottom-color: #030a16;
+}
+
+.floppy-secret h2 {
+	margin: 0;
+	font-size: 1.1rem;
+	letter-spacing: 0.03em;
+	text-shadow: 0 0 8px rgba(173, 211, 255, 0.45);
+}
+
+.floppy-secret-button {
+	display: inline-block;
+	margin-top: 12px;
+	padding: 7px 11px;
+	border: 1px solid #7bb8ff;
+	color: #f8fbff;
+	background: linear-gradient(180deg, #123061 0%, #0b1f41 100%);
+	text-decoration: none;
+	font-weight: 700;
+	text-shadow: 0 0 6px rgba(255, 255, 255, 0.25);
+	box-shadow: 0 0 10px rgba(80, 151, 255, 0.4), inset 0 0 0 1px rgba(255, 255, 255, 0.16);
+	transition: transform 110ms ease, box-shadow 110ms ease, filter 110ms ease;
+}
+
+.floppy-secret-button:hover,
+.floppy-secret-button:focus-visible {
+	transform: translateY(-1px);
+	filter: brightness(1.08);
+	box-shadow: 0 0 14px rgba(110, 182, 255, 0.6), inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+	outline: none;
 }
 
 @keyframes floppy-pulse {

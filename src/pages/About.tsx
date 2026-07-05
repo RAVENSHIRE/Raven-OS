@@ -7,7 +7,7 @@ const points = [
     text: ABOUT.aboutMe,
   },
   {
-    title: "Hobbies",
+    title: "Skills",
     text: ABOUT.hobbies,
   },
 ];

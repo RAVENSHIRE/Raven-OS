@@ -56,7 +56,7 @@ export default function Taskbar() {
     <footer className="taskbar" ref={taskbarRef}>
       <button
         type="button"
-        className="taskbar-start"
+        className="taskbar-start taskbar-start-button"
         onClick={() => setStartOpen((prev) => !prev)}
         title="Open Start menu"
         aria-haspopup="menu"
@@ -89,7 +89,7 @@ export default function Taskbar() {
         ))}
       </div>
 
-      <div className="taskbar-clock" aria-label="Current time">
+      <div className="status-bar-field taskbar-clock" aria-label="Current time">
         {clock}
       </div>
     </footer>

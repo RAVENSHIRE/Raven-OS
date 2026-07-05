@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useOS } from "../../context/OSContext";
 
 type Enemy = {
@@ -18,23 +18,31 @@ type GameState = "playing" | "won" | "lost";
 
 const FIELD_WIDTH = 300;
 const FIELD_HEIGHT = 360;
-const PLAYER_Y = 328;
-const MAX_WAVES = 4;
-const ENEMY_RADIUS = 12;
-const BULLET_RADIUS = 4;
-const PLAYER_RADIUS = 12;
-const SHOOT_COOLDOWN_MS = 140;
+const PLAYER_Y = FIELD_HEIGHT - 18;
+const ENEMY_COUNT = 9;
+const ENEMY_SIZE = 12;
+const BULLET_SIZE = 4;
+const PLAYER_HALF_WIDTH = 10;
+const SHOOT_COOLDOWN_MS = 190;
+const PLAYER_SPEED = 165;
+const BULLET_SPEED = 250;
+const ENEMY_SPEED = 20;
 
-function makeWave(waveNumber: number) {
-  const count = 3 + Math.min(2, waveNumber - 1);
-  const spacing = FIELD_WIDTH / (count + 1);
+function makeWave() {
+  const columns = 5;
+  const spacing = FIELD_WIDTH / (columns + 1);
 
-  return Array.from({ length: count }, (_, index) => ({
-    id: `w${waveNumber}-e${index}`,
-    x: spacing * (index + 1),
-    y: -40 - waveNumber * 14,
-    alive: true,
-  }));
+  return Array.from({ length: ENEMY_COUNT }, (_, index) => {
+    const row = Math.floor(index / columns);
+    const col = index % columns;
+
+    return {
+      id: `e${index}`,
+      x: spacing * (col + 1),
+      y: -36 - row * 26,
+      alive: true,
+    };
+  });
 }
 
 export default function SpaceFighter() {
@@ -43,9 +51,7 @@ export default function SpaceFighter() {
 
   const [playerX, setPlayerX] = useState(FIELD_WIDTH / 2);
   const [bullets, setBullets] = useState<Bullet[]>([]);
-  const [enemies, setEnemies] = useState<Enemy[]>(() => makeWave(1));
-  const [wave, setWave] = useState(1);
-  const [score, setScore] = useState(0);
+  const [enemies, setEnemies] = useState<Enemy[]>(() => makeWave());
   const [state, setState] = useState<GameState>("playing");
 
   const keysRef = useRef({ left: false, right: false });
@@ -123,56 +129,53 @@ export default function SpaceFighter() {
       lastTimeRef.current = time;
       cooldownRef.current = Math.max(0, cooldownRef.current - deltaMs);
 
-      const movementPerSecond = 290;
       let nextPlayerX = playerXRef.current;
-
       if (keysRef.current.left) {
-        nextPlayerX -= movementPerSecond * delta;
+        nextPlayerX -= PLAYER_SPEED * delta;
       }
       if (keysRef.current.right) {
-        nextPlayerX += movementPerSecond * delta;
+        nextPlayerX += PLAYER_SPEED * delta;
       }
 
-      nextPlayerX = Math.min(FIELD_WIDTH - PLAYER_RADIUS, Math.max(PLAYER_RADIUS, nextPlayerX));
+      nextPlayerX = Math.min(FIELD_WIDTH - PLAYER_HALF_WIDTH, Math.max(PLAYER_HALF_WIDTH, nextPlayerX));
       playerXRef.current = nextPlayerX;
       setPlayerX(nextPlayerX);
 
       setBullets((currentBullets) => {
         const movedBullets = currentBullets
-          .map((bullet) => ({ ...bullet, y: bullet.y - 420 * delta }))
-          .filter((bullet) => bullet.y > -10);
+          .map((bullet) => ({ ...bullet, y: bullet.y - BULLET_SPEED * delta }))
+          .filter((bullet) => bullet.y > -8);
         const survivingBulletsRef: { value: Bullet[] } = { value: movedBullets };
 
         setEnemies((currentEnemies) => {
-          const movedEnemies = currentEnemies.map((enemy) => ({ ...enemy, y: enemy.y + (58 + wave * 9) * delta }));
+          const movedEnemies = currentEnemies.map((enemy) => ({ ...enemy, y: enemy.y + ENEMY_SPEED * delta }));
 
-          const shotEnemyIds = new Set<string>();
+          const destroyed = new Set<string>();
           const survivingBullets: Bullet[] = [];
 
           for (const bullet of movedBullets) {
-            const target = movedEnemies.find(
+            const hit = movedEnemies.find(
               (enemy) =>
-                !shotEnemyIds.has(enemy.id) &&
-                Math.abs(enemy.x - bullet.x) <= ENEMY_RADIUS + BULLET_RADIUS &&
-                Math.abs(enemy.y - bullet.y) <= ENEMY_RADIUS + BULLET_RADIUS
+                !destroyed.has(enemy.id) &&
+                Math.abs(enemy.x - bullet.x) <= ENEMY_SIZE / 2 + BULLET_SIZE / 2 &&
+                Math.abs(enemy.y - bullet.y) <= ENEMY_SIZE / 2 + BULLET_SIZE / 2
             );
 
-            if (target) {
-              shotEnemyIds.add(target.id);
+            if (hit) {
+              destroyed.add(hit.id);
             } else {
               survivingBullets.push(bullet);
             }
           }
+
           survivingBulletsRef.value = survivingBullets;
 
-          if (shotEnemyIds.size > 0) {
-            setScore((current) => current + shotEnemyIds.size);
-          }
-
-          const remaining = movedEnemies.filter((enemy) => !shotEnemyIds.has(enemy.id));
-          const enemyReachedBottom = remaining.some((enemy) => enemy.y >= FIELD_HEIGHT - 18);
+          const remaining = movedEnemies.filter((enemy) => !destroyed.has(enemy.id));
+          const enemyReachedBottom = remaining.some((enemy) => enemy.y >= FIELD_HEIGHT - ENEMY_SIZE / 2);
           const enemyHitPlayer = remaining.some(
-            (enemy) => enemy.y >= PLAYER_Y - PLAYER_RADIUS && Math.abs(enemy.x - playerXRef.current) <= PLAYER_RADIUS + ENEMY_RADIUS
+            (enemy) =>
+              enemy.y >= PLAYER_Y - 10 &&
+              Math.abs(enemy.x - playerXRef.current) <= PLAYER_HALF_WIDTH + ENEMY_SIZE / 2
           );
 
           if (enemyReachedBottom || enemyHitPlayer) {
@@ -181,14 +184,8 @@ export default function SpaceFighter() {
           }
 
           if (remaining.length === 0) {
-            if (wave >= MAX_WAVES) {
-              setState("won");
-              return [];
-            }
-
-            const nextWave = wave + 1;
-            setWave(nextWave);
-            return makeWave(nextWave);
+            setState("won");
+            return [];
           }
 
           return remaining;
@@ -209,27 +206,16 @@ export default function SpaceFighter() {
       rafRef.current = null;
       lastTimeRef.current = null;
     };
-  }, [state, wave]);
+  }, [state]);
 
-  const statusText = useMemo(() => {
-    if (state === "won") {
-      return "You saved the galaxy! (2/4 unlocked)";
-    }
-
-    if (state === "lost") {
-      return "Game Over";
-    }
-
-    if (alreadyWon) {
-      return "Unlocked already. Keep blasting for a high score.";
-    }
-
-    return "Clear all waves to win.";
-  }, [alreadyWon, state]);
-
-  const manualShoot = () => {
-    shoot();
-  };
+  const statusText =
+    state === "won"
+      ? "Wave Complete! (2/4 unlocked)"
+      : state === "lost"
+        ? "Game Over"
+        : alreadyWon
+          ? "Destroy the wave again for practice."
+          : "Destroy all enemies in Wave 1.";
 
   const reset = () => {
     keysRef.current = { left: false, right: false };
@@ -237,42 +223,101 @@ export default function SpaceFighter() {
     playerXRef.current = FIELD_WIDTH / 2;
     setPlayerX(FIELD_WIDTH / 2);
     setBullets([]);
-    setEnemies(makeWave(1));
-    setWave(1);
-    setScore(0);
+    setEnemies(makeWave());
     setState("playing");
   };
+
+  const destroyedCount = ENEMY_COUNT - enemies.length;
 
   return (
     <div className="game-panel">
       <p className="game-status">{statusText}</p>
-      <p className="game-meta">
-        Wave: {wave}/{MAX_WAVES} | Score: {score}
-      </p>
       <p className="game-meta">Controls: ← → move, X shoot</p>
 
-      <div className="space-field" role="img" aria-label="Space Fighter game field">
-        <div className="space-player" style={{ left: playerX }}>
-          ▲
+      <div
+        className="space-field"
+        role="img"
+        aria-label="Space Fighter game field"
+        style={{ background: "#050505", border: "2px solid #7a7a7a" }}
+      >
+        <div
+          style={{
+            position: "absolute",
+            top: 8,
+            left: 10,
+            color: "#f3f3f3",
+            fontSize: "0.78rem",
+            letterSpacing: "0.03em",
+            fontFamily: "Courier New, monospace",
+          }}
+        >
+          Enemies: {destroyedCount}/{ENEMY_COUNT}
         </div>
 
+        <div
+          style={{
+            position: "absolute",
+            top: 8,
+            right: 10,
+            color: "#f3f3f3",
+            fontSize: "0.78rem",
+            letterSpacing: "0.03em",
+            fontFamily: "Courier New, monospace",
+          }}
+        >
+          Wave 1/1
+        </div>
+
+        <div
+          style={{
+            position: "absolute",
+            left: playerX - PLAYER_HALF_WIDTH,
+            top: PLAYER_Y - 10,
+            width: 0,
+            height: 0,
+            borderLeft: "10px solid transparent",
+            borderRight: "10px solid transparent",
+            borderTop: "14px solid #9fe8ff",
+          }}
+          aria-hidden="true"
+        />
+
         {enemies.map((enemy) => (
-          <div key={enemy.id} className="space-enemy" style={{ left: enemy.x, top: enemy.y }}>
-            ✶
-          </div>
+          <div
+            key={enemy.id}
+            style={{
+              position: "absolute",
+              left: enemy.x - ENEMY_SIZE / 2,
+              top: enemy.y - ENEMY_SIZE / 2,
+              width: ENEMY_SIZE,
+              height: ENEMY_SIZE,
+              background: "#ffcc66",
+            }}
+          />
         ))}
 
         {bullets.map((bullet) => (
-          <div key={bullet.id} className="space-bullet" style={{ left: bullet.x, top: bullet.y }} />
+          <div
+            key={bullet.id}
+            style={{
+              position: "absolute",
+              left: bullet.x - BULLET_SIZE / 2,
+              top: bullet.y - BULLET_SIZE / 2,
+              width: BULLET_SIZE,
+              height: BULLET_SIZE,
+              borderRadius: "50%",
+              background: "#ffffff",
+            }}
+          />
         ))}
       </div>
 
       <div className="game-actions">
-        <button type="button" className="game-reset" onClick={manualShoot} disabled={state !== "playing"}>
+        <button type="button" className="game-reset" onClick={shoot} disabled={state !== "playing"}>
           Shoot
         </button>
         <button type="button" className="game-reset" onClick={reset}>
-          New Mission
+          New Game
         </button>
       </div>
     </div>

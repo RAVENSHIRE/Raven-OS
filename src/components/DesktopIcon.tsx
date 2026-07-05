@@ -1,3 +1,5 @@
+import { useMemo, useState } from "react";
+
 type DesktopIconProps = {
   label: string;
   iconSrc: string;
@@ -8,6 +10,9 @@ type DesktopIconProps = {
 };
 
 export default function DesktopIcon({ label, iconSrc, iconAlt, onOpen, disabled, highlight }: DesktopIconProps) {
+  const [iconFailed, setIconFailed] = useState(false);
+  const fallbackGlyph = useMemo(() => label.trim().charAt(0).toUpperCase(), [label]);
+
   return (
     <button
       type="button"
@@ -26,7 +31,19 @@ export default function DesktopIcon({ label, iconSrc, iconAlt, onOpen, disabled,
       title={disabled ? "Locked: Beat all games" : label}
     >
       <span className="desktop-icon-glyph" aria-hidden="true">
-        <img className="desktop-icon-image" src={iconSrc} alt={iconAlt} width={32} height={32} draggable={false} />
+        {iconFailed ? (
+          <span className="desktop-icon-fallback">{fallbackGlyph || "?"}</span>
+        ) : (
+          <img
+            className="desktop-icon-image"
+            src={iconSrc}
+            alt={iconAlt}
+            width={32}
+            height={32}
+            draggable={false}
+            onError={() => setIconFailed(true)}
+          />
+        )}
       </span>
       <span className="desktop-icon-label">{label}</span>
     </button>

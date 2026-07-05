@@ -48,15 +48,25 @@ function WindowContent({ id }: { id: WindowId }) {
 
   return (
     <article className="tool-window-content floppy-secret">
-      <h2>🐦 RAVEN = KRÄHE</h2>
-      <p>You found the secret! Krayenbühl.</p>
-      <p>The hidden disk was never about storage. It was about persistence.</p>
+      <h2>🐦‍⬛ RAVEN = KRÄHE</h2>
+      <p>You've unlocked the secret archive.</p>
+      <p>
+        <strong>[SPECIAL PROJECT]</strong> Jay's most ambitious work, the Raven OS project itself.
+      </p>
+      <a
+        className="floppy-secret-button"
+        href="https://github.com/RAVENSHIRE/Raven-OS"
+        target="_blank"
+        rel="noreferrer"
+      >
+        Access Project →
+      </a>
     </article>
   );
 }
 
 function DesktopShell() {
-  const { closeWindow, focusedWindow, openWindows, windowPositions } = useOS();
+  const { closeWindow, focusedWindow, openWindows, windowPositions, floppyUnlocked } = useOS();
 
   return (
     <div className="os-shell">
@@ -68,11 +78,17 @@ function DesktopShell() {
             <Window
               key={windowId}
               id={windowId}
-              title={WINDOW_TITLES[windowId]}
+              title={windowId === "floppy" && floppyUnlocked ? "CLASSIFIED" : WINDOW_TITLES[windowId]}
               position={windowPositions[windowId]}
               zIndex={windowId === focusedWindow ? 200 : index + 10}
-              className={windowId === "showroom" ? "desktop-window-showcase" : "desktop-window-tool"}
-              statusText={windowId === "showroom" ? "© 2026 Jay Krayenbühl" : "Ready"}
+              className={
+                windowId === "showroom"
+                  ? "desktop-window-showcase"
+                  : windowId === "floppy" && floppyUnlocked
+                    ? "desktop-window-tool desktop-window-classified"
+                    : "desktop-window-tool"
+              }
+              statusText={windowId === "showroom" ? "© 2026 Jay Krayenbühl" : windowId === "floppy" ? "Encrypted" : "Ready"}
               onClose={() => closeWindow(windowId)}
             >
               <WindowContent id={windowId} />
